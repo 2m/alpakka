@@ -232,4 +232,10 @@ object Dependencies {
       "org.mockito" % "mockito-core" % "2.7.11" % Test // MIT
     )
   )
+
+  val ReactiveSockets = Seq(
+    libraryDependencies ++= Seq(
+      "io.reactivesocket" % "reactivesocket-transport-tcp" % "0.2.3-SNAPSHOT" // ApacheV2
+    )
+  )
 }

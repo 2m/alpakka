@@ -1,3 +1,6 @@
+
+resolvers in ThisBuild += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
+
 lazy val alpakka = project
   .in(file("."))
   .enablePlugins(PublishUnidoc)
@@ -18,6 +21,7 @@ lazy val alpakka = project
     jms,
     kinesis,
     mqtt,
+    rsocket,
     s3,
     springWeb,
     simpleCodecs,
@@ -146,6 +150,14 @@ val defaultParadoxSettings: Seq[Setting[_]] = Seq(
   ),
   sourceDirectory := baseDirectory.value / "src" / "main"
 )
+
+lazy val reactivesocket = project
+  .in(file("reactivesocket"))
+  .enablePlugins(AutomateHeaderPlugin)
+  .settings(
+    name := "akka-stream-alpakka-reactivesocket",
+    Dependencies.ReactiveSockets
+  )
 
 lazy val docs = project
   .enablePlugins(ParadoxPlugin, NoPublish)
