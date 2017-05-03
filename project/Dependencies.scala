@@ -4,7 +4,7 @@ object Dependencies {
 
   val ScalaVersions = Seq("2.11.8", "2.12.1")
   val AkkaVersion = "2.4.17"
-  val AkkaHttpVersion = "10.0.5"
+  val AkkaHttpVersion = "10.0.6"
 
   val Common = Seq(
     libraryDependencies ++= Seq(

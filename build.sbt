@@ -19,6 +19,9 @@ lazy val alpakka = project
              sqs,
              sse)
 
+resolvers in ThisBuild +=
+  "staging" at "https://oss.sonatype.org/content/repositories/comtypesafe-1824"
+
 lazy val amqp = project
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
