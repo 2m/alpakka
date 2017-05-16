@@ -1,0 +1,42 @@
+package akka.stream.alpakka.amqp
+@target(Scala)
+
+type AmqpCredentials {
+  username: String!
+  password: String!
+}
+
+interface AmqpConnectionSettings {
+}
+
+type DefaultAmqpConnection implements AmqpConnectionSettings {
+}
+
+type AmqpConnectionUri implements AmqpConnectionSettings {
+  uri: String!
+}
+
+type AmqpConnectionDetails implements AmqpConnectionSettings {
+  host: String!
+  port: Int!
+  credentials: akka.stream.alpakka.amqp.AmqpCredentials
+  virtualHost: String
+  sslProtocol: String
+}
+
+interface Declaration {}
+
+type QueueDeclaration implements Declaration {
+  name: String!
+  durable: Boolean! = false
+  exclusive: Boolean! = false
+  autoDelete: Boolean! = false
+  #arguments: [Tuple2[String, AnyRef]
+}
+
+type AmqpSinkSettings {
+  connectionSettings: akka.stream.alpakka.amqp.AmqpConnectionSettings!
+  exchange: String
+  routingKey: String
+  declarations: [akka.stream.alpakka.amqp.Declaration]
+}

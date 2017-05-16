@@ -20,7 +20,7 @@ lazy val alpakka = project
              sse)
 
 lazy val amqp = project
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ContrabandPlugin)
   .settings(
     name := "akka-stream-alpakka-amqp",
     Dependencies.Amqp
