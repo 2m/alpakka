@@ -258,10 +258,18 @@ trait CommonFtpStageSpec extends BaseSpec with Eventually {
       val future = infiniteSource.runWith(storeToPath(s"/$fileName", append = false))
       waitForUploadToStart(fileName)
       stopServer()
-      val result = future.futureValue
-      startServer()
+      try {
+        val result = future.futureValue
+        startServer()
 
-      result.status.failed.get shouldBe a[Exception]
+        result.status.failed.get shouldBe a[Exception]
+      } catch {
+        case e: Exception =>
+          // server future failed
+          println(s"server future failed ${e.getLocalizedMessage}")
+          e.printStackTrace()
+          Coroner.printReport("FTP SPEC", System.out)
+      }
     }
   }
 }

@@ -92,8 +92,11 @@ abstract class SftpSupportImpl extends FtpBaseSupport {
     @After
     public void stopServer() {
         try {
+            System.out.println("stopping server");
             sshd.stop(true);
         } catch(Throwable t) {
+            System.out.println("exception while stopping");
+            t.printStackTrace();
             throw new RuntimeException(t);
         }
     }
