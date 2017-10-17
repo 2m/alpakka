@@ -152,6 +152,15 @@ object Dependencies {
     )
   )
 
+  val RSocket = Seq(
+    libraryDependencies ++= Seq(
+      "io.rsocket" % "rsocket-core" % "0.9.12", // ApacheV2
+      "io.rsocket" % "rsocket-transport-netty" % "0.9.12", // ApacheV2
+      "io.rsocket" % "rsocket-transport-local" % "0.9.12", // ApacheV2
+      "io.rsocket" % "rsocket-transport-aeron" % "0.9.12" // ApacheV2
+    )
+  )
+
   val S3 = Seq(
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
@@ -230,12 +239,6 @@ object Dependencies {
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-java-sdk-kinesis" % "1.11.95", // ApacheV2
       "org.mockito" % "mockito-core" % "2.7.11" % Test // MIT
-    )
-  )
-
-  val RSocket = Seq(
-    libraryDependencies ++= Seq(
-      "io.rsocket" % "reactivesocket" % "0.9.12" // ApacheV2
     )
   )
 }

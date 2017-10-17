@@ -109,7 +109,11 @@ lazy val mongodb = alpakkaProject("mongodb", Dependencies.MongoDb)
 
 lazy val mqtt = alpakkaProject("mqtt", Dependencies.Mqtt)
 
-lazy val rsocket = alpakkaProject("rsocket", Dependencies.RSocket)
+lazy val rsocket = alpakkaProject(
+  "rsocket",
+  Dependencies.RSocket,
+  resolvers += "jfrog" at "https://oss.jfrog.org/libs-snapshot"
+)
 
 lazy val s3 = alpakkaProject("s3", Dependencies.S3)
 

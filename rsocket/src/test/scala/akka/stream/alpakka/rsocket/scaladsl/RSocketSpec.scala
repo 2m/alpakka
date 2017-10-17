@@ -1,7 +1,16 @@
-package akka.stream.alpakka.reactivesocket.scaladsl
+/*
+ * Copyright (C) 2016-2017 Lightbend Inc. <http://www.lightbend.com>
+ */
+package akka.stream.alpakka.rsocket.scaladsl
 
+import java.net.URI
+
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import akka.stream.scaladsl._
-import io.reactivesocket.util.PayloadImpl
+import io.rsocket.RSocketFactory
+import io.rsocket.transport.netty.client.WebsocketClientTransport
+import io.rsocket.util.PayloadImpl
 import org.scalatest.WordSpec
 
 import scala.concurrent.duration._
@@ -12,10 +21,19 @@ class ReactiveSocketSpec extends WordSpec {
 
     "support server and client" in {
 
-      import io.reactivesocket.transport.tcp.client.TcpTransportClient
-      import io.reactivesocket.transport.tcp.server.TcpTransportServer
+      implicit val sys = ActorSystem()
+      implicit val mat = ActorMaterializer()
 
-      val binding = ReactiveSocketServer(TcpTransportServer.create())
+      val ws = WebsocketClientTransport.create(URI.create("ws://rsocket-demo.herokuapp.com/ws"))
+      val client = RSocketFactory.connect().keepAlive().transport(ws).start().block()
+
+      val f = client.requestStream(PayloadImpl.textPayload("peace"))
+      Source.fromPublisher(f).runWith(Sink.foreach(m => println(m.getDataUtf8)))
+
+      scala.io.StdIn.readLine()
+
+      sys.terminate()
+      /*val binding = ReactiveSocketServer(TcpServerTransport.create())
           .toMat(Sink.foreach {
             _.flow.runWith(Source.repeat(new PayloadImpl("Pong")), Sink.foreach(println))
           })(Keep.left)
@@ -25,11 +43,11 @@ class ReactiveSocketSpec extends WordSpec {
 
       ReactiveSocketClient.stream(new PayloadImpl("One time ping")).runForeach(println)
 
-      Source.tick(1.second, 1.second, new PayloadImpl("Continuous ping")).via(ReactiveSocketClient.channel()).runForeach(println)
+      Source.tick(1.second, 1.second, new PayloadImpl("Continuous ping")).via(ReactiveSocketClient.channel()).runForeach(println)*/
 
     }
 
-    "support local transport" in {
+    /*"support local transport" in {
 
       import io.reactivesocket.local.LocalServer
       import io.reactivesocket.local.LocalClient
@@ -87,7 +105,7 @@ class ReactiveSocketSpec extends WordSpec {
       implicit val rs = ReactiveSocket(new AeronTransportClient(connector, config))
 
       Source.tick(1.second, 1.second, new PayloadImpl("Hi")).via(ReactiveSocketClient.channel()).runForeach(println)
-    }
+    }*/
 
   }
 
