@@ -109,6 +109,8 @@ lazy val mongodb = alpakkaProject("mongodb", Dependencies.MongoDb)
 
 lazy val mqtt = alpakkaProject("mqtt", Dependencies.Mqtt)
 
+lazy val rsocket = alpakkaProject("rsocket", Dependencies.RSocket)
+
 lazy val s3 = alpakkaProject("s3", Dependencies.S3)
 
 lazy val springWeb = alpakkaProject("spring-web", Dependencies.SpringWeb)
@@ -150,14 +152,6 @@ val defaultParadoxSettings: Seq[Setting[_]] = Seq(
   ),
   sourceDirectory := baseDirectory.value / "src" / "main"
 )
-
-lazy val reactivesocket = project
-  .in(file("reactivesocket"))
-  .enablePlugins(AutomateHeaderPlugin)
-  .settings(
-    name := "akka-stream-alpakka-reactivesocket",
-    Dependencies.ReactiveSockets
-  )
 
 lazy val docs = project
   .enablePlugins(ParadoxPlugin, NoPublish)
