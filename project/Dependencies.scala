@@ -131,6 +131,14 @@ object Dependencies {
     )
   )
 
+  val GooglePubSubGrpc = Seq(
+    libraryDependencies ++= Seq(
+      "io.grpc" % "grpc-auth" % "1.10.0", // ApacheV2
+      "com.google.api.grpc" % "grpc-google-cloud-pubsub-v1" % "0.3.0" % "protobuf", // ApacheV2
+      "com.google.auth" % "google-auth-library-oauth2-http" % "0.9.0" % "test" // BSD 3-clause
+    )
+  )
+
   val HBase = {
     val hbaseVersion = "1.2.4"
     val hadoopVersion = "2.5.1"

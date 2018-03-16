@@ -10,6 +10,7 @@ lazy val modules: Seq[ProjectReference] = Seq(
   ftp,
   geode,
   googleCloudPubSub,
+  googleCloudPubSubGrpc,
   hbase,
   ironmq,
   jms,
@@ -101,6 +102,13 @@ lazy val googleCloudPubSub = alpakkaProject(
   // For mockito https://github.com/akka/alpakka/issues/390
   parallelExecution in Test := false
 )
+
+lazy val googleCloudPubSubGrpc = alpakkaProject(
+  "google-cloud-pub-sub-grpc",
+  "googlecloud.pubsub.grpc",
+  Dependencies.GooglePubSubGrpc,
+  PB.protoSources in Compile += target.value / "protobuf_external"
+).enablePlugins(AkkaGrpcPlugin, JavaAgent)
 
 lazy val hbase = alpakkaProject("hbase", "hbase", Dependencies.HBase, fork in Test := true)
 
