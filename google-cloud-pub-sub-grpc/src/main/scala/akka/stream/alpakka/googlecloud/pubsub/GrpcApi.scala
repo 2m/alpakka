@@ -5,10 +5,8 @@
 package akka.stream.alpakka.googlecloud.pubsub
 
 import akka.stream.Materializer
-import com.google.auth.Credentials
 import com.google.pubsub.v1.pubsub.{PublisherClient, SubscriberClient}
-import io.grpc.auth.MoreCallCredentials
-import io.grpc.{CallOptions, ManagedChannelBuilder}
+import io.grpc.{CallCredentials, CallOptions, ManagedChannelBuilder}
 
 import scala.concurrent.ExecutionContext
 
@@ -21,13 +19,13 @@ private trait GrpcApi {
 
   private val channel = ManagedChannelBuilder.forTarget(DefaultPubSubGoogleApisHost).build()
 
-  def publisher(credentials: Credentials)(implicit mat: Materializer, ec: ExecutionContext) =
+  def publisher(credentials: CallCredentials)(implicit mat: Materializer, ec: ExecutionContext) =
     new PublisherClient(channel,
                         CallOptions.DEFAULT
-                          .withCallCredentials(MoreCallCredentials.from(credentials)))
+                          .withCallCredentials(credentials))
 
-  def subscriber(credentials: Credentials)(implicit mat: Materializer, ec: ExecutionContext) =
+  def subscriber(credentials: CallCredentials)(implicit mat: Materializer, ec: ExecutionContext) =
     new SubscriberClient(channel,
                          CallOptions.DEFAULT
-                           .withCallCredentials(MoreCallCredentials.from(credentials)))
+                           .withCallCredentials(credentials))
 }

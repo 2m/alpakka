@@ -11,6 +11,7 @@ import akka.stream.scaladsl.Source
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.protobuf.ByteString
 import com.google.pubsub.v1.pubsub.{PublishRequest, PubsubMessage}
+import io.grpc.auth.MoreCallCredentials
 
 import scala.collection.immutable
 import scala.concurrent.Await
@@ -46,7 +47,8 @@ object TestApp {
     // Loads credentials from a json file, which is found
     // from GOOGLE_APPLICATION_CREDENTIALS env variable
     val creds = GoogleCredentials.getApplicationDefault
+    val callCreds = MoreCallCredentials.from(creds)
 
-    requests.via(GooglePubSub.publish(creds)).runForeach(println)
+    requests.via(GooglePubSub.publish(callCreds)).runForeach(println)
   }
 }

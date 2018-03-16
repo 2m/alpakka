@@ -8,8 +8,8 @@ import akka.stream.Materializer
 import akka.stream.alpakka.googlecloud.pubsub._
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import akka.{Done, NotUsed}
-import com.google.auth.Credentials
 import com.google.pubsub.v1.pubsub._
+import io.grpc.CallCredentials
 
 import scala.collection.immutable
 import scala.concurrent.Future
@@ -24,7 +24,7 @@ protected[pubsub] trait GooglePubSub {
   /**
    * Creates a flow to that publish messages to a topic and emits the message ids
    */
-  def publish(creds: Credentials, parallelism: Int = 1)(
+  def publish(creds: CallCredentials, parallelism: Int = 1)(
       implicit materializer: Materializer
   ): Flow[PublishRequest, immutable.Seq[String], NotUsed] = {
     import materializer.executionContext
@@ -34,7 +34,7 @@ protected[pubsub] trait GooglePubSub {
       .map(_.messageIds.toVector)
   }
 
-  def subscribe(subscription: String, creds: Credentials)(
+  def subscribe(subscription: String, creds: CallCredentials)(
       implicit materializer: Materializer
   ): Source[ReceivedMessage, NotUsed] = {
     import materializer.executionContext
@@ -47,7 +47,7 @@ protected[pubsub] trait GooglePubSub {
       .mapMaterializedValue(_ => NotUsed)
   }
 
-  def acknowledge(creds: Credentials,
+  def acknowledge(creds: CallCredentials,
                   parallelism: Int = 1)(implicit materializer: Materializer): Sink[AcknowledgeRequest, Future[Done]] = {
     import materializer.executionContext
 
