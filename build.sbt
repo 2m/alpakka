@@ -10,6 +10,7 @@ lazy val modules: Seq[ProjectReference] = Seq(
   ftp,
   geode,
   googleCloudPubSub,
+  googleCloudPubSubGrpc,
   hbase,
   ironmq,
   jms,
@@ -94,6 +95,20 @@ lazy val googleCloudPubSub = alpakkaProject(
   // For mockito https://github.com/akka/alpakka/issues/390
   parallelExecution in Test := false
 )
+
+lazy val googleCloudPubSubGrpc = alpakkaProject(
+  "google-cloud-pub-sub-grpc",
+  Dependencies.GooglePubSubGrpc,
+  akkaGrpcCodeGeneratorSettings ~= { _.filterNot(_ == "flat_package") },
+  akkaGrpcCodeGenerators in Compile := Seq(
+    GeneratorAndSettings(akka.grpc.gen.scaladsl.ScalaClientCodeGenerator, akkaGrpcCodeGeneratorSettings.value),
+    GeneratorAndSettings(akka.grpc.gen.javadsl.JavaClientCodeGenerator)
+  ),
+  akkaGrpcModelGenerators in Compile := Seq[protocbridge.Target](
+    (protocbridge.JvmGenerator("scala", scalapb.ScalaPbCodeGenerator), akkaGrpcCodeGeneratorSettings.value) -> sourceManaged.value,
+    PB.gens.java -> sourceManaged.value
+  )
+).enablePlugins(AkkaGrpcPlugin, JavaAgent)
 
 lazy val hbase = alpakkaProject("hbase", Dependencies.HBase, fork in Test := true)
 
