@@ -20,6 +20,7 @@ private[grpc] object GrpcPublisher {
     new PublisherClient(settingsFromConfig(config))
 
   def create(config: PubSubConfig, mat: Materializer, ec: ExecutionContext): JavaPublisherClient = {
+    // workaround for https://github.com/akka/akka-grpc/issues/67
     val scalaPublisher = GrpcPublisher(config)(mat, ec)
     JavaPublisherClient.create(
       scalaPublisher.channel,
@@ -37,6 +38,7 @@ private[grpc] object GrpcSubscriber {
     new SubscriberClient(settingsFromConfig(config))
 
   def create(config: PubSubConfig, mat: Materializer, ec: ExecutionContext): JavaSubscriberClient = {
+    // workaround for https://github.com/akka/akka-grpc/issues/67
     val scalaSubscriber = GrpcSubscriber(config)(mat, ec)
     JavaSubscriberClient.create(
       scalaSubscriber.channel,
