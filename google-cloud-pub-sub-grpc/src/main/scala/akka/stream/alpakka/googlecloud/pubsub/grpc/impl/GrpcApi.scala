@@ -56,7 +56,4 @@ object GrpcApi {
     options = config.callCredentials.map(CallOptions.DEFAULT.withCallCredentials),
     certificate = config.rootCa
   )
-
-  def subscriptionFqrn(projectId: String, subscriptionName: String) =
-    s"projects/$projectId/subscriptions/$subscriptionName"
 }

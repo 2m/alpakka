@@ -17,33 +17,57 @@ object GooglePubSub {
 
   def publish(config: PubSubConfig, parallelism: Int)(
       implicit materializer: Materializer
-  ): Flow[PublishRequest, PublishResponse, NotUsed] = {
-    import materializer.executionContext
+  ): Flow[PublishRequest, PublishResponse, NotUsed] =
+    Flow.lazyInit(
+      _ => {
+        import materializer.executionContext
+        val publisher = GrpcPublisher(config)
+        val flow = Flow[PublishRequest].mapAsyncUnordered(parallelism)(publisher.publish).watchTermination() {
+          (_, completion) =>
+            completion.onComplete(_ => publisher.close())
+            NotUsed
+        }
+        Future.successful(flow)
+      },
+      () => NotUsed
+    )
 
-    val publisher = GrpcPublisher(config)
-    Flow[PublishRequest]
-      .mapAsyncUnordered(parallelism)(publisher.publish)
-  }
-
-  def subscribe(config: PubSubConfig, projectId: String, subscriptionName: String)(
+  def subscribe(config: PubSubConfig, request: StreamingPullRequest)(
       implicit materializer: Materializer
-  ): Source[ReceivedMessage, NotUsed] = {
-    import materializer.executionContext
-
-    val req = StreamingPullRequest(GrpcApi.subscriptionFqrn(projectId, subscriptionName))
-    GrpcSubscriber(config)
-      .streamingPull(Source.single(req))
-      .mapConcat(_.receivedMessages.toVector)
+  ): Source[ReceivedMessage, NotUsed] =
+    Source
+      .lazily { () =>
+        import materializer.executionContext
+        val subscriber = GrpcSubscriber(config)
+        subscriber
+          .streamingPull(Source.single(request).concat(Source.maybe))
+          .mapConcat(_.receivedMessages.toVector)
+          .watchTermination() { (_, completion) =>
+            completion.onComplete(_ => subscriber.close())
+            NotUsed
+          }
+      }
       .mapMaterializedValue(_ => NotUsed)
-  }
 
   def acknowledge(config: PubSubConfig,
                   parallelism: Int)(implicit materializer: Materializer): Sink[AcknowledgeRequest, Future[Done]] = {
     import materializer.executionContext
 
-    val subscriber = GrpcSubscriber(config)
-    Flow[AcknowledgeRequest]
-      .mapAsyncUnordered(parallelism)(subscriber.acknowledge)
-      .toMat(Sink.ignore)(Keep.right)
+    Sink
+      .lazyInit(
+        (_: AcknowledgeRequest) => {
+          val subscriber = GrpcSubscriber(config)
+          val sink = Flow[AcknowledgeRequest]
+            .mapAsyncUnordered(parallelism)(subscriber.acknowledge)
+            .watchTermination() { (_, completion) =>
+              completion.onComplete(_ => subscriber.close())
+              NotUsed
+            }
+            .toMat(Sink.ignore)(Keep.right)
+          Future.successful(sink)
+        },
+        () => Future.successful(Done)
+      )
+      .mapMaterializedValue(_.flatten)
   }
 }

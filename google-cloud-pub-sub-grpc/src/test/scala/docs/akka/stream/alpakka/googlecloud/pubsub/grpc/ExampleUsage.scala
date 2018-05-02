@@ -2,7 +2,7 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <http://www.lightbend.com>
  */
 
-package akka.stream.alpakka.googlecloud.pubsub.grpc
+package docs.akka.stream.alpakka.googlecloud.pubsub.grpc
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
@@ -65,8 +65,10 @@ class ExampleUsage {
   //#publish-fast
 
   //#subscribe
+  val request = StreamingPullRequest(subscription)
+
   val subscriptionSource: Source[ReceivedMessage, NotUsed] =
-    GooglePubSub.subscribe(config, projectId, subscription)
+    GooglePubSub.subscribe(config, request)
 
   val ackSink: Sink[AcknowledgeRequest, Future[Done]] =
     GooglePubSub.acknowledge(config, parallelism = 1)

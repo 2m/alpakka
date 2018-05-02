@@ -2,18 +2,20 @@
  * Copyright (C) 2016-2018 Lightbend Inc. <http://www.lightbend.com>
  */
 
-package akka.stream.alpakka.googlecloud.pubsub.grpc;
+package docs.akka.stream.alpakka.googlecloud.pubsub.grpc;
 
 import akka.Done;
 import akka.NotUsed;
 import akka.actor.ActorSystem;
 import akka.stream.ActorMaterializer;
+import akka.stream.alpakka.googlecloud.pubsub.grpc.PubSubConfig;
 import akka.stream.alpakka.googlecloud.pubsub.grpc.javadsl.GooglePubSub;
 import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.*;
+import com.google.pubsub.v1.StreamingPullRequest;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.List;
@@ -73,8 +75,10 @@ public class ExampleUsageJava {
 
 
         //#subscribe
+        StreamingPullRequest request = StreamingPullRequest.newBuilder().setSubscription(subscription).build();
+
         Source<ReceivedMessage, NotUsed> subscriptionSource =
-          GooglePubSub.subscribe(config, projectId, subscription, materializer);
+          GooglePubSub.subscribe(config, request, materializer);
 
         Sink<AcknowledgeRequest, CompletionStage<Done>> ackSink =
           GooglePubSub.acknowledge(config, 1, materializer);

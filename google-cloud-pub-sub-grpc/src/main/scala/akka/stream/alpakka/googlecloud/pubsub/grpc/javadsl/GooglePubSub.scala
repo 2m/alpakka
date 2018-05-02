@@ -4,7 +4,7 @@
 
 package akka.stream.alpakka.googlecloud.pubsub.grpc.javadsl
 
-import java.util.concurrent.CompletionStage
+import java.util.concurrent.{CompletableFuture, CompletionStage}
 
 import akka.{Done, NotUsed}
 import akka.stream.Materializer
@@ -17,35 +17,47 @@ object GooglePubSub {
 
   def publish(config: PubSubConfig,
               parallelism: Int,
-              materializer: Materializer): Flow[PublishRequest, PublishResponse, NotUsed] = {
-    val publisher = GrpcPublisher.create(config, materializer, materializer.executionContext)
-    Flow
-      .create[PublishRequest]()
-      .mapAsyncUnordered(parallelism, publisher.publish)
-  }
+              materializer: Materializer): Flow[PublishRequest, PublishResponse, NotUsed] =
+    Flow.lazyInit(
+      (_: PublishRequest) => {
+        // FIXME call close() on publisher when it gets one
+        val publisher = GrpcPublisher.create(config, materializer, materializer.executionContext)
+        val flow = Flow
+          .create[PublishRequest]()
+          .mapAsyncUnordered(parallelism, publisher.publish)
+        CompletableFuture.completedFuture(flow)
+      },
+      () => NotUsed
+    )
 
   def subscribe(config: PubSubConfig,
-                projectId: String,
-                subscriptionName: String,
-                materializer: Materializer): Source[ReceivedMessage, NotUsed] = {
-    val req = StreamingPullRequest
-      .newBuilder()
-      .setSubscription(GrpcApi.subscriptionFqrn(projectId, subscriptionName))
-      .build()
-    GrpcSubscriber
-      .create(config, materializer, materializer.executionContext)
-      .streamingPull(Source.single(req))
-      .mapConcat(_.getReceivedMessagesList)
-  }
+                request: StreamingPullRequest,
+                materializer: Materializer): Source[ReceivedMessage, NotUsed] =
+    Source
+      .lazily { () =>
+        // FIXME call close() on subscriber when it gets one
+        GrpcSubscriber
+          .create(config, materializer, materializer.executionContext)
+          .streamingPull(Source.single(request))
+          .mapConcat(_.getReceivedMessagesList)
+      }
+      .mapMaterializedValue(_ => NotUsed)
 
   def acknowledge(config: PubSubConfig,
                   parallelism: Int,
-                  materializer: Materializer): Sink[AcknowledgeRequest, CompletionStage[Done]] = {
-    val subscriber = GrpcSubscriber.create(config, materializer, materializer.executionContext)
-    Flow
-      .create[AcknowledgeRequest]
-      .mapAsyncUnordered(parallelism, subscriber.acknowledge)
-      .toMat(Sink.ignore, Keep.right[akka.NotUsed, CompletionStage[Done]])
-  }
-
+                  materializer: Materializer): Sink[AcknowledgeRequest, CompletionStage[Done]] =
+    Sink
+      .lazyInit(
+        (_: AcknowledgeRequest) => {
+          // FIXME call close() on subscriber when it gets one
+          val subscriber = GrpcSubscriber.create(config, materializer, materializer.executionContext)
+          val sink = Flow
+            .create[AcknowledgeRequest]
+            .mapAsyncUnordered(parallelism, subscriber.acknowledge)
+            .toMat(Sink.ignore, Keep.right[akka.NotUsed, CompletionStage[Done]])
+          CompletableFuture.completedFuture(sink)
+        },
+        () => CompletableFuture.completedFuture(Done.getInstance())
+      )
+      .mapMaterializedValue(f => f.thenCompose(i => i))
 }

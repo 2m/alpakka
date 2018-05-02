@@ -7,11 +7,13 @@ package akka.stream.alpakka.googlecloud.pubsub.grpc
 import akka.stream.alpakka.googlecloud.pubsub.grpc.impl.GrpcCredentials
 import io.grpc.CallCredentials
 
+import scala.util.Try
+
 final class PubSubConfig private (
     val host: String = "pubsub.googleapis.com",
     val port: Int = 443,
     val rootCa: Option[String] = Some("GoogleInternetAuthorityG3.crt"),
-    val callCredentials: Option[CallCredentials] = Some(GrpcCredentials.applicationDefault()),
+    val callCredentials: Option[CallCredentials] = Try(GrpcCredentials.applicationDefault()).toOption,
     val returnImmediately: Boolean = true,
     val maxMessages: Int = 1000
 ) {
