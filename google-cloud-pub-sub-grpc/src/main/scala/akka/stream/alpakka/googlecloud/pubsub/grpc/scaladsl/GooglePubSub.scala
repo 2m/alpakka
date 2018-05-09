@@ -18,19 +18,21 @@ object GooglePubSub {
   def publish(config: PubSubConfig, parallelism: Int)(
       implicit materializer: Materializer
   ): Flow[PublishRequest, PublishResponse, NotUsed] =
-    Flow.lazyInit(
-      _ => {
-        import materializer.executionContext
-        val publisher = GrpcPublisher(config)
-        val flow = Flow[PublishRequest].mapAsyncUnordered(parallelism)(publisher.publish).watchTermination() {
-          (_, completion) =>
-            completion.onComplete(_ => publisher.close())
-            NotUsed
+    Flow
+      .lazyInitAsync(
+        () => {
+          import materializer.executionContext
+          val publisher = GrpcPublisher(config)
+          val flow = Flow[PublishRequest]
+            .mapAsyncUnordered(parallelism)(publisher.publish)
+            .watchTermination() { (_, completion) =>
+              completion.onComplete(_ => publisher.close())
+              NotUsed
+            }
+          Future.successful(flow)
         }
-        Future.successful(flow)
-      },
-      () => NotUsed
-    )
+      )
+      .mapMaterializedValue(_ => NotUsed)
 
   def subscribe(config: PubSubConfig, request: StreamingPullRequest)(
       implicit materializer: Materializer
@@ -54,8 +56,8 @@ object GooglePubSub {
     import materializer.executionContext
 
     Sink
-      .lazyInit(
-        (_: AcknowledgeRequest) => {
+      .lazyInitAsync(
+        () => {
           val subscriber = GrpcSubscriber(config)
           val sink = Flow[AcknowledgeRequest]
             .mapAsyncUnordered(parallelism)(subscriber.acknowledge)
@@ -65,9 +67,8 @@ object GooglePubSub {
             }
             .toMat(Sink.ignore)(Keep.right)
           Future.successful(sink)
-        },
-        () => Future.successful(Done)
+        }
       )
-      .mapMaterializedValue(_.flatten)
+      .mapMaterializedValue(_.flatMap(_.getOrElse(Future.failed(new Error("No element received")))))
   }
 }
