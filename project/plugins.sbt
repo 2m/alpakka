@@ -9,5 +9,6 @@ addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings" % "2.0.1")
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.2")
 addSbtPlugin("com.lightbend" % "sbt-whitesource" % "0.1.7")
 
-addSbtPlugin("com.lightbend.akka.grpc" % "sbt-akka-grpc" % "bee9ed13")
+addSbtPlugin("com.lightbend.akka.grpc" % "sbt-akka-grpc" % "0.1")
+
 addSbtPlugin("com.lightbend.sbt" % "sbt-javaagent" % "0.1.4")

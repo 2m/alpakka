@@ -9,7 +9,7 @@ import java.util.concurrent.{CompletableFuture, CompletionStage}
 import akka.{Done, NotUsed}
 import akka.stream.Materializer
 import akka.stream.alpakka.googlecloud.pubsub.grpc.PubSubConfig
-import akka.stream.alpakka.googlecloud.pubsub.grpc.impl.{GrpcApi, GrpcPublisher, GrpcSubscriber}
+import akka.stream.alpakka.googlecloud.pubsub.grpc.impl.{GrpcPublisher, GrpcSubscriber}
 import akka.stream.javadsl.{Flow, Keep, Sink, Source}
 import com.google.pubsub.v1._
 
@@ -54,7 +54,7 @@ object GooglePubSub {
           val sink = Flow
             .create[AcknowledgeRequest]
             .mapAsyncUnordered(parallelism, subscriber.acknowledge)
-            .toMat(Sink.ignore, Keep.right[akka.NotUsed, CompletionStage[Done]])
+            .toMat(Sink.ignore(), Keep.right[akka.NotUsed, CompletionStage[Done]])
           CompletableFuture.completedFuture(sink)
         },
         () => CompletableFuture.completedFuture(Done.getInstance())

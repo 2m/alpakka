@@ -7,7 +7,7 @@ package akka.stream.alpakka.googlecloud.pubsub.grpc.scaladsl
 import akka.{Done, NotUsed}
 import akka.stream.Materializer
 import akka.stream.alpakka.googlecloud.pubsub.grpc.PubSubConfig
-import akka.stream.alpakka.googlecloud.pubsub.grpc.impl.{GrpcApi, GrpcPublisher, GrpcSubscriber}
+import akka.stream.alpakka.googlecloud.pubsub.grpc.impl.{GrpcPublisher, GrpcSubscriber}
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import com.google.pubsub.v1.pubsub._
 
